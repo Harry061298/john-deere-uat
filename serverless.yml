@@ -1,0 +1,12 @@
+service: john-deere-uat
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+
+functions:
+  api:
+    handler: ./bin/www.handler
+    events:
+      - httpApi: '*'
