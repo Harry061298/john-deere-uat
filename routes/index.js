@@ -53,20 +53,36 @@ const needsOrganizationAccess = async (data) => {
     })
   ).data;
   console.log("response", response)
-  // return response
   const organizations = response.values;
+  console.log("organizations", organizations)
   const connectionsLink = organizations
     .flatMap((org) => org.links)
     .find((link) => link.rel === 'connections');
 
   if (connectionsLink) {
     const param = new URLSearchParams({
-      redirect_uri: settings.orgConnectionCompletedUrl,
+      redirect_uri: strdata.orgConnectionCompletedUrl,
     });
 
-    return `${connectionsLink.uri}?${param.toString()}`;
+    // return `${connectionsLink.uri}?${param.toString()}`;
+
+    var redirect = `${connectionsLink.uri}?${param.toString()}`
+
+    var result = {
+      'redirect': redirect,
+      'response': response
+    }
+
+    return result
+
+  } else {
+    var result = {
+      'redirect': redirect,
+      'response': response
+    }
+    return result
+
   }
-  return null;
 };
 
 const app = express(); // Create an Express app
@@ -214,9 +230,11 @@ app.get('/callback', async function ({ query }, res, next) {
     //   res.render('index', settings);
     // }
     var data = {
-      'organizationAccessUrl': organizationAccessUrl,
+      'organizationAccessUrl': organizationAccessUrl.response,
+      'redirect': organizationAccessUrl.redirect,
       'token': token
     }
+    console.log("data....", data)
     // Send the token as JSON response
     return res.json(data);
 
@@ -292,6 +310,37 @@ app.post('/call-api', async function ({ body }, res, next) {
           'Accept': body.Accept,
 
         },
+      })
+    ).data;
+    res.json(response);
+
+    // res.render('index', {
+    //   ...settings,
+    //   apiResponse: JSON.stringify(response, null, 2),
+    // });
+  } catch (e) {
+    console.log("e...", e)
+    return res.render('error', {
+      error: e,
+    });
+  }
+});
+
+
+
+app.post('/create-wp', async function ({ body }, res, next) {
+  console.log("body/....", body.payload)
+  var payloadData = body.payload
+  try {
+    const response = (
+      await axios.post(body.url, payloadData, {
+        headers: {
+          'Authorization': `Bearer ${body.accessToken}`,
+          'Accept': body.Accept,
+          'Content-Type': 'application/vnd.deere.axiom.v3+json'
+
+        },
+
       })
     ).data;
     res.json(response);
