@@ -286,7 +286,7 @@ app.get('/refresh-access-token', async function (req, res, next) {
 });
 
 
-// this method is used to fetch data from JD portal
+// this method is used to fetch data from JD portal //
 
 
 app.post('/call-api', async function ({ body }, res, next) {
