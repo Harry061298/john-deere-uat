@@ -10,8 +10,8 @@ const serverUrl = `http://localhost:${port}`;
 let settings = {
   apiUrl: 'https://sandboxapi.deere.com/platform',
   callbackUrl: `http://localhost:3000/callback`,
-  clientId: '0oaaxy2awr3xXLet55d7',
-  clientSecret: '9f85Rx8-TOifQrjgI3DBaQo8PtyOnEQJgiAQTnfc6K1_U5JTly7-YDqtLJ-AtOgJ',
+  clientId: '',
+  clientSecret: '',
   orgConnectionCompletedUrl: serverUrl,
   scopes: 'openid profile offline_access ag1 eq1',
   state: 'test',
@@ -88,16 +88,18 @@ const needsOrganizationAccess = async (data) => {
 const app = express(); // Create an Express app
 app.use(cors()); // Enable CORS for all routes
 
+
+// Test the API in Prod
 app.get("/path", (req, res, next) => {
   return res.status(200).json({
     message: "Hello from path!",
   });
 });
 
-app.post('/Test', async function ({ body }, res, next) {
+// This method is used to Login to JD by getting client id and client secret ID.
+app.post('/Login', async function ({ body }, res, next) {
   try {
-    // const { body } = req;
-    // populateSettings(body);
+
     console.log("populateSettings....", body)
     const metaData = (await axios.get(body.wellKnown)).data;
     const params = new URLSearchParams({
@@ -118,13 +120,9 @@ app.post('/Test', async function ({ body }, res, next) {
 });
 
 
+// not in use, can be used for future reference
+
 app.get('/call', async function ({ query }, res, next) {
-  // if (query.error) {
-  //   const description = query.error_description;
-  //   return res.render('error', {
-  //     error: description
-  //   });
-  // }
 
   try {
     console.log("query......", query);
@@ -158,11 +156,15 @@ app.get('/call', async function ({ query }, res, next) {
 });
 
 /* GET home page. */
+
 app.get('/', function (req, res, next) {
   res.render('index', settings);
 });
 
 /* Initialize OIDC login */
+
+// not in use, can be used for future reference
+
 app.post('/', async function ({ body }, res, next) {
   populateSettings(body);
   console.log("metaData.token_endpoint", metaData.token_endpoint)
@@ -248,23 +250,7 @@ app.get('/callback', async function ({ query }, res, next) {
   }
 });
 
-// app.get('/proxy', async function ({ query }, res, next) {
-//   console.log("url.....", query)
-//   try {
-//     // const response = await axios.get(body.url);
-//     // res.send(response.data);
-
-//     const response = (
-//       await axios.get(query.url)
-//     ).data;
-//     res.json(response);
-//   } catch (error) {
-//     console.error(error);
-//   }
-
-
-
-// });
+// used to refresh the access token
 app.get('/refresh-access-token', async function (req, res, next) {
   try {
     const basicAuthHeader = Buffer.from(`${settings.clientId}:${settings.clientSecret}`).toString(
@@ -299,6 +285,10 @@ app.get('/refresh-access-token', async function (req, res, next) {
   }
 });
 
+
+// this method is used to fetch data from JD portal
+
+
 app.post('/call-api', async function ({ body }, res, next) {
   console.log("body/....", body)
   try {
@@ -327,8 +317,8 @@ app.post('/call-api', async function ({ body }, res, next) {
 });
 
 
-
-app.post('/create-wp', async function ({ body }, res, next) {
+// used to create work plan
+app.post('/createWorkplan', async function ({ body }, res, next) {
   console.log("body/....", body.payload)
   var payloadData = body.payload
   try {
